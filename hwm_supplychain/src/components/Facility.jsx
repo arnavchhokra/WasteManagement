@@ -15,6 +15,7 @@ function Facility() {
     const [address,setAddress] = useState("");
 
 
+
     const handleChange = (e) => {
       const { name, value } = e.target;
       setNewShipment({ ...newShipment, [name]: value });
@@ -25,7 +26,6 @@ function Facility() {
       setShipments([...shipments, newShipment]);
       setNewShipment({ id: '', status: '', estimatedArrival: '' });
     };
-
 
     useEffect(()=>{
 
@@ -52,20 +52,57 @@ function Facility() {
     },[address])
 
     const web3 = new Web3(window.ethereum);
-    const contractAddress = "0xd2301369b95e41060671c782998582dd43740030";
+    const contractAddress = "0x1d17b219b0ef6e5cba439ba18b8c23ff5e8248d1";
     const contract = new web3.eth.Contract(ABI, contractAddress);
 
     const facilityRegistration = async() =>{
       try {
         console.log(address)
         await contract.methods
-          .registerFacility(newShipment.status, 0, newShipment.id)
+          .registerFacility(newShipment.status, newShipment.estimatedArrival,newShipment.id )
           .send({ from: address });
-        console.log('Facility registered successfully');
+        alert('Facility registered successfully');
       } catch (error) {
-        console.error('Error registering Facility', error);
+        alert('Error registering Facility', error);
       }
     }
+
+    const [facilityName, setFacilityName] = useState("");
+    const[facilityId, setFacilityId] = useState("");
+    const [facilityType, setFacilityType] = useState("");
+
+
+    useEffect(() => {
+      const fetchFacilities = async() =>{
+        try{
+        const facilitie = await contract.methods.getFacility().call({from: address});
+        console.log(facilitie)
+        setFacilityId(facilitie.facilityId.toString());
+        setFacilityName(facilitie.facilityName)
+        if(facilitie.facilityType == 0n)
+        {
+          setFacilityType("Hospital")
+
+        }
+        else if(facilitie.facilityType == 1n)
+        {
+          setFacilityType("Transport")
+        }
+        else if(facilitie.facilityType == 2n)
+        {
+          setFacilityType("Treatment")
+        }
+        else{
+          console.log("ERRUR")
+        }
+          console.log(facilitie)
+        }catch(e)
+        {
+          console.log(e)
+        }
+      }
+      fetchFacilities();
+    })
 
     return (
         <><Navbar/>
@@ -114,13 +151,11 @@ function Facility() {
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" onClick={facilityRegistration}>Register</button>
         </form>
         <div>
-          <h2 className="text-xl font-bold mb-4">Registered Facilities</h2>
+          <h2 className="text-xl font-bold mb-4">Registered Facility(with this address)</h2>
           <ul>
-            {shipments.map((shipment, index) => (
-              <li key={index} className="mb-2">
-                <strong>ID:</strong> {shipment.id}, <strong>Name:</strong> {shipment.status}, <strong>Type:</strong> {shipment.estimatedArrival}
+              <li className="mb-2">
+                <strong>ID:</strong> {facilityId}, <strong>Name:</strong> {facilityName}, <strong>Type:</strong> {facilityType}
               </li>
-            ))}
           </ul>
         </div>
       </div></>

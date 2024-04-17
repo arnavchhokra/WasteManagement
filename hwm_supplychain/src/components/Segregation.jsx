@@ -1,35 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './Navbar';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react'; // removed useState from here
 import Web3 from 'web3';
-
+import ABI from "../ABI.json"
 
 function Segregation() {
-  const [address,setAddress] = useState("");
+  const [address, setAddress] = useState("");
 
+  // State variables for form inputs
+  const [isSegregationDone, setIsSegregationDone] = useState(false);
+  const [totalWaste, setTotalWaste] = useState("");
+  const [totalBiomedicalWaste, setTotalBiomedicalWaste] = useState("");
+  const [storageProperlyDone, setStorageProperlyDone] = useState(false);
+  const [binsNotOverflowing, setBinsNotOverflowing] = useState(false);
+  const [wasteStored24Hours, setWasteStored24Hours] = useState(false);
+  const [temperatureRecorded, setTemperatureRecorded] = useState("");
 
-  useEffect(()=>{
-
-     const getAddress = async()=>{
-    try {
-      await window.ethereum.enable();
-    } catch (error) {
-      if (error.message === 'User denied account authorization') {
-        // handle the case where the user denied the connection request
-      } else if (error.message === 'MetaMask is not enabled') {
-        // handle the case where MetaMask is not available
-      } else {
-        // handle other errors
+  useEffect(() => {
+    const getAddress = async () => {
+      const web3 = new Web3(window.ethereum);
+      try {
+        await window.ethereum.enable();
+      } catch (error) {
+        if (error.message === 'User denied account authorization') {
+          // handle the case where the user denied the connection request
+        } else if (error.message === 'MetaMask is not enabled') {
+          // handle the case where MetaMask is not available
+        } else {
+          // handle other errors
+        }
       }
+      const accounts = await web3.eth.getAccounts();
+      setAddress(accounts[0]);
+      console.log(address);
     }
-    const accounts = await web3.eth.getAccounts();
-    setAddress(accounts[0]);
-    console.log(accounts[0])
+    getAddress();
+  }, [address]);
+
+  const web3 = new Web3(window.ethereum);
+  const contractAddress = "0x1d17b219b0ef6e5cba439ba18b8c23ff5e8248d1";
+  const contract = new web3.eth.Contract(ABI, contractAddress);
+
+  const hospitalWasteRegistration = async () => {
+    try {
+      console.log(address);
+      await contract.methods
+        .registerHospitalWaste(isSegregationDone, totalWaste, totalBiomedicalWaste, storageProperlyDone, binsNotOverflowing, wasteStored24Hours, temperatureRecorded  )
+        .send({ from: address });
+      alert('Hospital Waste registered successfully');
+    } catch (error) {
+      alert('Hospital Waste registration failed', error);
+    }
   }
-
-  getAddress()
-
-  },[])
 
   return (
     <>
@@ -39,19 +61,21 @@ function Segregation() {
           <div className="card w-96 bg-base-100 shadow-xl">
             <div className="card-body">
               <div className="text-xl font-bold text-center my-10">Segregation Information</div>
-              <form className="space-y-4 mr-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="isSegregationDone">Is Segregation Done?</label>
                     <p className="font-thin">Identification, classification, and segregation, having labelled and dedicated bins (colour-based as per WHO)</p>
-                    <input
-                      type="text"
+                    <select
                       name="isSegregationDone"
                       id="isSegregationDone"
-                      placeholder="yes/no"
                       className="border rounded-md px-4 py-2 w-full"
+                      value={isSegregationDone}
+                      onChange={(e) => setIsSegregationDone(e.target.value === "true")}
                       required
-                    />
+                    >
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="totalWaste">Total Waste Generated</label>
@@ -60,8 +84,10 @@ function Segregation() {
                       type="text"
                       name="totalWaste"
                       id="totalWaste"
-                      placeholder="kg/tonnes"
+                      placeholder="kg/tonnes (in whole number)"
                       className="border rounded-md px-4 py-2 w-full"
+                      value={totalWaste}
+                      onChange={(e) => setTotalWaste(e.target.value)}
                       required
                     />
                   </div>
@@ -72,69 +98,77 @@ function Segregation() {
                     type="text"
                     name="totalBiomedicalWaste"
                     id="totalBiomedicalWaste"
-                    placeholder="kg/tonnes"
+                    placeholder="kg/tonnes (in whole number)"
                     className="border rounded-md px-4 py-2 w-full"
+                    value={totalBiomedicalWaste}
+                    onChange={(e) => setTotalBiomedicalWaste(e.target.value)}
                     required
                   />
                 </div>
-                <button className="btn btn-primary">Add</button>
-              </form>
             </div>
           </div>
           <div className="card w-96 bg-base-100 shadow-xl">
             <div className="card-body">
               <div className="text-xl font-bold text-center my-10">Storage Information</div>
-              <form className="space-y-4 mr-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="isSegregationDone">Storage properly done</label>
+                    <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="storageProperlyDone">Storage properly done</label>
                     <p className="font-thin">Storage in labelled and dedicated bins(according to Biomedical Waste Managements Standards)</p>
-                    <input
-                      type="text"
-                      name="isSegregationDone"
-                      id="isSegregationDone"
-                      placeholder="Yes/No"
+                    <select
+                      name="storageProperlyDone"
+                      id="storageProperlyDone"
                       className="border rounded-md px-4 py-2 w-full"
+                      value={storageProperlyDone}
+                      onChange={(e) => setStorageProperlyDone(e.target.value === "true")}
                       required
-                    />
+                    >
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
                   </div>
                   <div>
-                    <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="totalWaste">Are bins not overflowing and in properly ventilated areas?</label>
-                    <p className="font-thin"></p>
-                    <input
-                      type="text"
-                      name="totalWaste"
-                      id="totalWaste"
-                      placeholder="yes/no"
+                    <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="binsNotOverflowing">Are bins not overflowing and in properly ventilated areas?</label>
+                    <select
+                      name="binsNotOverflowing"
+                      id="binsNotOverflowing"
                       className="border rounded-md px-4 py-2 w-full"
+                      value={binsNotOverflowing}
+                      onChange={(e) => setBinsNotOverflowing(e.target.value === "true")}
                       required
-                    />
+                    >
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="totalBiomedicalWaste">Waste stored being 24 hours and is stored within cold storage?</label>
-                  <input
-                    type="text"
-                    name="totalBiomedicalWaste"
-                    id="totalBiomedicalWaste"
-                    placeholder="yes/no"
+                  <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="wasteStored24Hours">Waste stored being 24 hours and is stored within cold storage?</label>
+                  <select
+                    name="wasteStored24Hours"
+                    id="wasteStored24Hours"
                     className="border rounded-md px-4 py-2 w-full"
+                    value={wasteStored24Hours}
+                    onChange={(e) => setWasteStored24Hours(e.target.value === "true")}
                     required
-                  />
+                  >
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="totalBiomedicalWaste">Temperature of Room recorded</label>
+                  <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="temperatureRecorded">Temperature of Room recorded</label>
                   <input
                     type="text"
                     name="temp"
                     id="temp"
-                    placeholder="degree C"
+                    placeholder="degree C (in whole number)"
                     className="border rounded-md px-4 py-2 w-full"
+                    value={temperatureRecorded}
+                    onChange={(e) => setTemperatureRecorded(e.target.value)}
                     required
                   />
                 </div>
-                <button className="btn btn-primary">Add</button>
-              </form>
+                <button onClick={hospitalWasteRegistration} className="btn btn-primary">Add</button>
             </div>
           </div>
         </div>
