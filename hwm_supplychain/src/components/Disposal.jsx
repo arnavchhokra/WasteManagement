@@ -5,8 +5,16 @@ import ABI from "../ABI.json";
 
 function Disposal() {
   const [address, setAddress] = useState("");
-  const [selectedMethods, setSelectedMethods] = useState([]);
-  const [isSegregationProper, setIsSegregationProper] = useState("");
+  const [isThermal, setIsThermal] = useState(false);
+  const [isChemical, setIsChemical] = useState(false);
+  const [isBiological, setIsBiological] = useState(false);
+  const [isMechanical, setIsMechanical] = useState(false);
+  const [isLandfills, setIsLandfills] = useState(false);
+  const [isAshPits, setIsAshPits] = useState(false);
+  const [isSewerLines, setIsSewerLines] = useState(false);
+  const [isRecycling, setIsRecycling] = useState(false);
+  const [isSegregationProper, setIsSegregationProper] = useState(false);
+  const [isOtherTreated, setIsOtherTreated] = useState(false);
 
   useEffect(() => {
     const getAddress = async () => {
@@ -30,29 +38,31 @@ function Disposal() {
   }, [address]);
 
   const web3 = new Web3(window.ethereum);
-  const contractAddress = "0x1d17b219b0ef6e5cba439ba18b8c23ff5e8248d1";
+  const contractAddress = "0x8d755677cdd61aba0c98463f3ad0e6425024fa12";
   const contract = new web3.eth.Contract(ABI, contractAddress);
 
   const disposalWasteRegistration = async () => {
     try {
       console.log(address);
       await contract.methods
-        .registerDisposalWaste(selectedMethods, isSegregationProper)
+        .registerDisposalWaste(
+          isThermal,
+          isChemical,
+          isBiological,
+          isMechanical,
+          isOtherTreated,
+          isLandfills,
+          isAshPits,
+          isSewerLines,
+          isRecycling,
+          isSegregationProper
+        )
         .send({ from: address });
       alert('Disposal Waste registered successfully');
     } catch (error) {
       alert('Disposal Waste registration failed', error);
     }
   }
-
-  const handleMethodChange = (e) => {
-    const method = e.target.value;
-    if (selectedMethods.includes(method)) {
-      setSelectedMethods(selectedMethods.filter((item) => item !== method));
-    } else {
-      setSelectedMethods([...selectedMethods, method]);
-    }
-  };
 
   return (
     <>
@@ -62,132 +72,120 @@ function Disposal() {
           <div className="card w-96 bg-base-100 shadow-xl">
             <div className="card-body">
               <div className="text-xl font-bold text-center my-10">Treatment Information</div>
-              <form className="space-y-4 mr-5">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="totalBiomedicalWaste">Select Treatment Methods Used</label>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="thermal"
-                      name="method"
-                      value="thermal"
-                      checked={selectedMethods.includes('thermal')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="thermal">Thermal-Incinerators and Autoclavaes</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="chemical"
-                      name="method"
-                      value="chemical"
-                      checked={selectedMethods.includes('chemical')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="chemical">Chemical-Chemical disinfection</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="biological"
-                      name="method"
-                      value="biological"
-                      checked={selectedMethods.includes('biological')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="biological">Biological-Decomposition and Biodigestion</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="mechanical"
-                      name="method"
-                      value="mechanical"
-                      checked={selectedMethods.includes('mechanical')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="mechanical">Mechanical-Shredding Grinding</label>
-                  </div>
-                </div>
-                <br />
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="totalBiomedicalWaste">Other methods</label>
-                <input
-                  type="text"
-                  name="totalBiomedicalWaste"
-                  id="totalBiomedicalWaste"
-                  placeholder="yes/no"
-                  className="border rounded-md px-4 py-2 w-full"
-                  required
-                  onChange={(e) => setIsSegregationProper(e.target.value)}
-                />
-              </form>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="thermal">Thermal-Incinerators and Autoclaves</label>
+                <select
+                  id="thermal"
+                  value={isThermal}
+                  onChange={(e) => setIsThermal(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="chemical">Chemical-Chemical disinfection</label>
+                <select
+                  id="chemical"
+                  value={isChemical}
+                  onChange={(e) => setIsChemical(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="biological">Biological-Decomposition and Biodigestion</label>
+                <select
+                  id="biological"
+                  value={isBiological}
+                  onChange={(e) => setIsBiological(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mechanical">Mechanical-Shredding Grinding</label>
+                <select
+                  id="mechanical"
+                  value={isMechanical}
+                  onChange={(e) => setIsMechanical(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mechanical">Are Other Treatment Methods used</label>
+                <select
+                  id="Other"
+                  value={isOtherTreated}
+                  onChange={(e) => setIsOtherTreated(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
             </div>
           </div>
           <div className="card w-96 bg-base-100 shadow-xl">
             <div className="card-body">
               <div className="text-xl font-bold text-center my-10">Disposal Information</div>
-              <form className="space-y-4 mr-5">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="totalBiomedicalWaste">Select Disposal Methods Used</label>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="landfills"
-                      name="method"
-                      value="landfills"
-                      checked={selectedMethods.includes('landfills')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="landfills">Landfills</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="ashPits"
-                      name="method"
-                      value="ashPits"
-                      checked={selectedMethods.includes('ashPits')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="ashPits">Ash Pits</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="sewerLines"
-                      name="method"
-                      value="sewerLines"
-                      checked={selectedMethods.includes('sewerLines')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="sewerLines">Sewer Lines- Liquid Waste</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      id="recycling"
-                      name="method"
-                      value="recycling"
-                      checked={selectedMethods.includes('recycling')}
-                      onChange={handleMethodChange}
-                    />
-                    <label htmlFor="recycling">Recycling</label>
-                  </div>
-                </div>
-                <br />
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="isSegregationProper">Segregation was properly done?</label>
-                <input
-                  type="text"
-                  name="isSegregationProper"
-                  id="isSegregationProper"
-                  placeholder="yes/no"
-                  className="border rounded-md px-4 py-2 w-full"
-                  required
-                  value={isSegregationProper}
-                  onChange={(e) => setIsSegregationProper(e.target.value)}
-                />
-              </form>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="landfills">Landfills</label>
+                <select
+                  id="landfills"
+                  value={isLandfills}
+                  onChange={(e) => setIsLandfills(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ashPits">Ash Pits</label>
+                <select
+                  id="ashPits"
+                  value={isAshPits}
+                  onChange={(e) => setIsAshPits(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sewerLines">Sewer Lines- Liquid Waste</label>
+                <select
+                  id="sewerLines"
+                  value={isSewerLines}
+                  onChange={(e) => setIsSewerLines(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="recycling">Recycling</label>
+                <select
+                  id="recycling"
+                  value={isRecycling}
+                  onChange={(e) => setIsRecycling(e.target.value === "true")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <br />
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="isSegregationProper">Segregation was properly done?</label>
+              <select
+                id="isSegregationProper"
+                value={isSegregationProper}
+                onChange={(e) => setIsSegregationProper(e.target.value === "true")}
+              >
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </select>
               <button onClick={disposalWasteRegistration} className="btn btn-primary">Add</button>
             </div>
           </div>

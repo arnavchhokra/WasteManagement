@@ -38,7 +38,7 @@ function Segregation() {
   }, [address]);
 
   const web3 = new Web3(window.ethereum);
-  const contractAddress = "0x1d17b219b0ef6e5cba439ba18b8c23ff5e8248d1";
+  const contractAddress = "0x8d755677cdd61aba0c98463f3ad0e6425024fa12";
   const contract = new web3.eth.Contract(ABI, contractAddress);
 
   const hospitalWasteRegistration = async () => {
